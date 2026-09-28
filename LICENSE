@@ -4,7 +4,8 @@ WRMS is proprietary software.
 
 Permission is granted to use official WRMS binary releases for
 personal, non-commercial purposes only. This permission includes executing
-the unmodified WRMS PowerShell scripts bundled in those official releases.
+the unmodified WRMS PowerShell scripts bundled in those official releases
+and the official WRMS bootstrap installer.
 
 No permission is granted to copy, modify, redistribute, sublicense,
 sell, commercialize, or create derivative works from the WRMS source

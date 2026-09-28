@@ -84,49 +84,48 @@ Use the named WRMS ZIPs under **Assets**. GitHub's automatic **Source code (zip/
 
 ## Install with PowerShell
 
-### 1. Install PowerShell 7 if needed
-
-In Windows Terminal or Windows PowerShell, run:
+Open **Windows PowerShell (64-bit)** or **PowerShell 7** and paste this one command:
 
 ```powershell
-winget install --id Microsoft.PowerShell --exact --source winget
+& { $p = Join-Path $env:TEMP ('WRMS-' + [guid]::NewGuid() + '.ps1'); Invoke-WebRequest -UseBasicParsing 'https://raw.githubusercontent.com/rockyroos/wrms-releases/main/install.ps1' -OutFile $p -ErrorAction Stop; if ((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash -ne '09CEFE1DD6CE6F3BB08D27D58916F88F63735ECFF8BE63C729BEA4B56E0F361C') { throw 'Installer checksum mismatch' }; Unblock-File -LiteralPath $p; powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File $p }
 ```
 
-Close and reopen your terminal, then open **PowerShell 7**. Check with `$PSVersionTable.PSVersion`: the major version must be 7 or newer. `pwsh` must be available on PATH.
+The bootstrap installer:
 
-Microsoft also provides [PowerShell installation instructions](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-windows). For the standard ZIP, install the **Windows Desktop Runtime, x64, .NET 8** from [Microsoft's .NET 8 download page](https://dotnet.microsoft.com/en-us/download/dotnet/8.0). The SDK and ASP.NET runtime are not substitutes for the Windows Desktop Runtime.
+1. Finds PowerShell 7, or installs it using Microsoft's WinGet package if it is missing. Windows or WinGet may ask you to confirm installation or license terms.
+2. Downloads the official **v0.1.0 self-contained ZIP**, which includes .NET.
+3. Verifies the ZIP against a pinned SHA-256 checksum before extracting or running it.
+4. Installs into `%LOCALAPPDATA%\WRMS`, removes its temporary ZIP and extracted package, and opens WRMS.
 
-### 2. Paste this complete block into PowerShell 7
+No manual download or extraction is needed. The bootstrap works from Windows PowerShell 5.1 as well as PowerShell 7. WRMS itself still runs on PowerShell 7. If PowerShell 7 is missing and WinGet is unavailable, it stops with a link to [Microsoft's installation instructions](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-windows). Installing PowerShell may require administrator approval; copying WRMS into your user folder does not.
 
-This downloads the self-contained ZIP, verifies its SHA-256 hash, extracts it into a new temporary folder, and installs WRMS into `%LOCALAPPDATA%\WRMS`. No manual ZIP download or extraction is needed for this route. The WRMS installation itself does not need administrator rights.
+The command saves the [published bootstrap script](install.ps1) as a temporary file and verifies its pinned SHA-256 before running it. You can also read the script first. The bootstrap file remains in your temporary folder for inspection. The installer uses RemoteSigned for its child PowerShell processes only; no persistent execution-policy setting is changed, and organization policy still applies.
+
+**Existing installation?** The destination must be empty. The installer stops before downloading or replacing anything if the destination already contains files. It does not upgrade or migrate existing profiles.
+
+### Choose another installation folder
+
+Download and inspect the bootstrap script, then run it with your preferred location:
 
 ```powershell
-$ErrorActionPreference = 'Stop'
-if ($PSVersionTable.PSVersion.Major -lt 7) { throw 'Open PowerShell 7 first.' }
-$asset = 'WRMS-v0.1.0-win-x64-selfcontained.zip'
-$expected = '268D71789F82858D1EDBD47D7AA9F85AE971AB6120A62FAEC89906973E374259'
-$work = Join-Path ([IO.Path]::GetTempPath()) ('WRMS-' + [guid]::NewGuid().ToString('N'))
-New-Item -ItemType Directory -Path $work | Out-Null
-$zip = Join-Path $work $asset
-Invoke-WebRequest -Uri "https://github.com/rockyroos/wrms-releases/releases/download/v0.1.0/$asset" -OutFile $zip
-if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash -ne $expected) { throw 'Download checksum mismatch. Installation stopped.' }
-Unblock-File -LiteralPath $zip
-$unpacked = Join-Path $work 'package'
-Expand-Archive -LiteralPath $zip -DestinationPath $unpacked
-& (Join-Path $unpacked 'Install-WRMS.ps1') -SourcePath $unpacked
+$bootstrap = Join-Path $env:TEMP ('WRMS-install-' + [guid]::NewGuid().ToString('N') + '.ps1')
+Invoke-WebRequest -UseBasicParsing -Uri 'https://raw.githubusercontent.com/rockyroos/wrms-releases/main/install.ps1' -OutFile $bootstrap
+# Read the downloaded script before running it.
+Unblock-File -LiteralPath $bootstrap
+& $bootstrap -InstallPath "$env:LOCALAPPDATA\WRMS-v0.1.0"
 ```
 
-The destination must be empty. If you already have WRMS installed, the installer stops without replacing it. To test v0.1.0 alongside it, add `-InstallPath "$env:LOCALAPPDATA\WRMS-v0.1.0"` to the last line. This version does not migrate existing profiles automatically.
-
-Then launch WRMS:
+Add `-NoLaunch` if you only want to install. For later starts, run:
 
 ```powershell
 & "$env:LOCALAPPDATA\WRMS\WRMS.Configurator.exe"
 ```
 
-Adjust the launch path if you selected a different installation folder. The temporary download and extracted package can be removed after installation.
+Adjust that path if you chose another folder.
 
 ## Alternative: download and extract yourself
+
+Before using this manual route, install **PowerShell 7**. The standard ZIP additionally needs the **.NET 8 Windows Desktop Runtime (x64)** from [Microsoft](https://dotnet.microsoft.com/en-us/download/dotnet/8.0).
 
 1. Download either named WRMS ZIP from the release's **Assets** section.
 2. Compare `Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\path\to\your-download.zip'` with the matching line in the release's `SHA256SUMS.txt`.
@@ -137,7 +136,7 @@ Adjust the launch path if you selected a different installation folder. The temp
 .\Install-WRMS.ps1 -SourcePath .
 ```
 
-That command installs an **already extracted** package; it does not download WRMS. The full block above performs all three steps: download, extract, install. There is no WRMS WinGet package in this release.
+That command installs an **already extracted** package; it does not download WRMS. The one-command bootstrap above performs all three steps: download, extract, install. There is no WRMS WinGet package in this release.
 
 If scripts are blocked, check `Get-ExecutionPolicy -List`. On a personally managed PC, you can permit local/unblocked scripts for just the current PowerShell window with `Set-ExecutionPolicy -Scope Process RemoteSigned`, then retry. Organization policy may prevent this; ask your administrator rather than changing machine-wide policy.
 
