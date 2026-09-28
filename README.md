@@ -1,8 +1,73 @@
-# WRMS — Windows RAM Mode Switcher
+# WRMS
 
-Switch between your own Windows app setups. Choose which apps to close or start, preview the changes, and apply a mode when you are ready.
+**Windows RAM Mode Switcher**
 
-WRMS does not automatically optimize Windows, clear memory, or promise more FPS. It has no always-running background service.
+A lightweight Windows mode switcher for starting and closing the apps you want for different setups.
+
+Create your own modes, choose exactly what should close or start, preview the changes, and apply them when you're ready.
+
+**WRMS is a mode switcher, not an optimizer.**
+
+It doesn't try to guess which Windows processes are "unnecessary", kill random services or promise more FPS. It simply automates app switching that you would otherwise do yourself.
+
+**[Download v0.1.0](https://github.com/rockyroos/wrms-releases/releases/tag/v0.1.0)** · [Installation instructions](#install-with-powershell)
+
+![WRMS Game Mode](docs/screenshots/wrms-game-mode.png)
+
+*Example modes from a configured installation. A fresh WRMS installation starts with no saved modes.*
+
+## Why I built WRMS
+
+WRMS started as a small personal setup.
+
+Whenever I wanted to game, stream or just use my PC for something different, I would manually close apps I wasn't using, including things still running in the background. Not because Windows needed some magical cleanup, but simply because I didn't need everything sitting in memory at the same time.
+
+After doing that enough times, I wanted a button for it.
+
+So I started building my own little mode switcher with PowerShell and Nilesoft Shell. I had modes like **Game Mode**, **Stream Mode**, **Entertainment Mode** and **Ultra Mode**. Each one could close the apps I didn't need and start the ones I did.
+
+It was basically automating something I was already doing by hand.
+
+That little personal setup eventually turned into WRMS: a configurable mode switcher where you decide what happens.
+
+No automatic optimization and no mystery tweaks. Just your apps, your modes and an easy way to switch between them.
+
+![WRMS desktop context menu](docs/screenshots/wrms-context-menu.png)
+
+## What WRMS does
+
+A mode can contain apps to **close**, apps to **start**, or both.
+
+Before anything changes, WRMS can show you exactly what the mode is about to do. When you apply it, the current state is saved so you can use **Restore Previous** afterwards.
+
+Modes can be managed from the WRMS configurator and launched from the Windows desktop context menu. Nilesoft Shell integration is also available.
+
+## How it works
+
+1. Create a mode.
+2. Choose which apps should close and which should start.
+3. Preview the mode to see what WRMS is about to do.
+4. Apply it when you're ready.
+5. Use **Restore Previous** if you want to return to the app state from before the switch.
+
+WRMS only acts on the apps you choose. RAM usage is shown as information, not as a target for automatic cleanup.
+
+## Features
+
+- Create your own Windows modes
+- Choose apps to close and start per mode
+- See whether an app is currently running
+- View RAM usage without treating RAM as something that needs to be "cleaned"
+- Preview changes before applying them
+- Save the current app state before a mode is applied
+- Restore the previous app state
+- Launch modes from the Windows desktop context menu
+- Optional Nilesoft Shell integration
+- Lightweight WPF configurator
+- PowerShell mode engine
+- No tray app, background service or always-running process
+
+![WRMS Apply preview](docs/screenshots/wrms-apply-preview.png)
 
 ## Download v0.1.0
 
